@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <LangVersion>10.0</LangVersion>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>105.3.22248.142</Version>
+    <PackageDescription>Provides CefNet support for Avalonia 11.0.0+</PackageDescription>
+    <RepositoryUrl>https://github.com/bkempinski/CefNet.Avalonia</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/CefNet/CefNet</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>CefNet, CEF, browser, chromium, Avalonia, AvaloniaUI, 11.0.0</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);TRACE;AVALONIA</DefineConstants>
+    <RootNamespace>CefNet.Avalonia</RootNamespace>
+    <AssemblyName>CefNet.Avalonia.Eleven</AssemblyName>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.0.0" />
+    <PackageReference Include="CefNet" Version="105.3.22248.142" />
+  </ItemGroup>
+
+</Project>
