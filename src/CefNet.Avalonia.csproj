@@ -5,7 +5,7 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>105.3.22248.142</Version>
+    <Version>105.3.22248.143</Version>
     <PackageDescription>Provides CefNet support for Avalonia 11.0.0+</PackageDescription>
     <RepositoryUrl>https://github.com/bkempinski/CefNet.Avalonia</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
