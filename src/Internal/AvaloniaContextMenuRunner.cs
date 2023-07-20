@@ -6,7 +6,6 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using CefNet.Avalonia;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace CefNet.Internal
@@ -31,7 +30,6 @@ namespace CefNet.Internal
 
 			Menu = new ContextMenu();
 			Menu.Closed += Menu_Closed;
-
 			Build(Model, Menu.Items);
 		}
 

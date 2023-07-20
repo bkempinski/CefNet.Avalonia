@@ -1,6 +1,8 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -15,9 +17,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Linq;
 using System.Diagnostics;
+using Interactive = Avalonia.Interactivity.Interactive;
+using Visual = Avalonia.Visual;
+using System.Globalization;
 using Avalonia.Reactive;
-using AIP = Avalonia.Input;
-using AIA = Avalonia.Interactivity;
 
 namespace CefNet.Avalonia
 {
@@ -28,13 +31,13 @@ namespace CefNet.Avalonia
 		private int _lastKey = -1;
 		private bool _allowResizeNotifications = true;
 		private int _suppressLostFocusEvent = 0;
-		private AIP.PointerPressedEventArgs _lastPointerPressedEventArgs;
+		private PointerPressedEventArgs _lastPointerPressedEventArgs;
 		private Dictionary<InitialPropertyKeys, object> InitialPropertyBag = new Dictionary<InitialPropertyKeys, object>();
 
 		/// <summary>
 		/// Identifies the <see cref="StartDragging"/> routed event.
 		/// </summary>
-		public static readonly AIA.RoutedEvent<StartDraggingEventArgs> StartDraggingEvent = AIA.RoutedEvent.Register<WebView, StartDraggingEventArgs>(nameof(StartDragging), AIA.RoutingStrategies.Bubble);
+		public static readonly RoutedEvent<StartDraggingEventArgs> StartDraggingEvent = RoutedEvent.Register<WebView, StartDraggingEventArgs>(nameof(StartDragging), RoutingStrategies.Bubble);
 
 		/// <summary>
 		/// Occurs when the user starts dragging content in the web view.
@@ -70,27 +73,27 @@ namespace CefNet.Avalonia
 			}
 			Initialize();
 
-            this.GetPropertyChangedObservable(Control.BoundsProperty).Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(x => OnBoundsChanged(x)));
+            this.GetPropertyChangedObservable(Control.BoundsProperty).Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(e => OnBoundsChanged(e)));
 
-			AddHandler(AIP.InputElement.KeyDownEvent, HandlePreviewKeyDown, AIA.RoutingStrategies.Tunnel, true);
-			AddHandler(AIP.InputElement.KeyUpEvent, HandlePreviewKeyUp, AIA.RoutingStrategies.Tunnel, true);
-			AddHandler<AIP.DragEventArgs>(AIP.DragDrop.DragEnterEvent, HandleDragEnter);
-			AddHandler<AIP.DragEventArgs>(AIP.DragDrop.DragOverEvent, HandleDragOver);
-			AddHandler<AIP.DragEventArgs>(AIP.DragDrop.DragLeaveEvent, HandleDragLeave);
-			AddHandler<AIP.DragEventArgs>(AIP.DragDrop.DropEvent, HandleDrop);
+            AddHandler(InputElement.KeyDownEvent, HandlePreviewKeyDown, RoutingStrategies.Tunnel, true);
+			AddHandler(InputElement.KeyUpEvent, HandlePreviewKeyUp, RoutingStrategies.Tunnel, true);
+			AddHandler<DragEventArgs>(DragDrop.DragEnterEvent, HandleDragEnter);
+			AddHandler<DragEventArgs>(DragDrop.DragOverEvent, HandleDragOver);
+            AddHandler<DragEventArgs>(DragDrop.DragLeaveEvent, HandleDragLeave);
+            AddHandler<DragEventArgs>(DragDrop.DropEvent, HandleDrop);
 		}
 
 		/// <summary>
 		/// Identifies the <see cref="TextFound"/> routed event.
 		/// </summary>
-		public static readonly AIA.RoutedEvent TextFoundEvent = AIA.RoutedEvent.Register<WebView, TextFoundRoutedEventArgs>(nameof(TextFound), AIA.RoutingStrategies.Bubble);
+		public static readonly RoutedEvent TextFoundEvent = RoutedEvent.Register<WebView, TextFoundRoutedEventArgs>(nameof(TextFound), RoutingStrategies.Bubble);
 
 		/// <summary>
 		/// Adds a handler for the <see cref="TextFound"/> attached event.
 		/// </summary>
 		/// <param name="element">An object that raise the <see cref="TextFound"/> routed event.</param>
 		/// <param name="handler">The handler.</param>
-		public static void AddTextFoundHandler(AIA.Interactive element, EventHandler<TextFoundRoutedEventArgs> handler)
+		public static void AddTextFoundHandler(Interactive element, EventHandler<TextFoundRoutedEventArgs> handler)
 		{
 			element?.AddHandler(TextFoundEvent, handler);
 		}
@@ -100,7 +103,7 @@ namespace CefNet.Avalonia
 		/// </summary>
 		/// <param name="element">An object that raise the <see cref="TextFound"/> routed event.</param>
 		/// <param name="handler">The handler.</param>
-		public static void RemoveTextFoundHandler(AIA.Interactive element, EventHandler<TextFoundRoutedEventArgs> handler)
+		public static void RemoveTextFoundHandler(Interactive element, EventHandler<TextFoundRoutedEventArgs> handler)
 		{
 			element?.RemoveHandler(TextFoundEvent, handler);
 		}
@@ -108,14 +111,14 @@ namespace CefNet.Avalonia
 		/// <summary>
 		/// Identifies the <see cref="PdfPrintFinished"/> routed event.
 		/// </summary>
-		public static readonly AIA.RoutedEvent PdfPrintFinishedEvent = AIA.RoutedEvent.Register<WebView, PdfPrintFinishedRoutedEventArgs>(nameof(PdfPrintFinished), AIA.RoutingStrategies.Bubble);
+		public static readonly RoutedEvent PdfPrintFinishedEvent = RoutedEvent.Register<WebView, PdfPrintFinishedRoutedEventArgs>(nameof(PdfPrintFinished), RoutingStrategies.Bubble);
 
 		/// <summary>
 		/// Adds a handler for the <see cref="PdfPrintFinished"/> attached event.
 		/// </summary>
 		/// <param name="element">An object that raise the <see cref="PdfPrintFinished"/> routed event.</param>
 		/// <param name="handler">The handler.</param>
-		public static void AddPdfPrintFinishedHandler(AIA.Interactive element, EventHandler<PdfPrintFinishedRoutedEventArgs> handler)
+		public static void AddPdfPrintFinishedHandler(Interactive element, EventHandler<PdfPrintFinishedRoutedEventArgs> handler)
 		{
 			element?.AddHandler(PdfPrintFinishedEvent, handler);
 		}
@@ -125,7 +128,7 @@ namespace CefNet.Avalonia
 		/// </summary>
 		/// <param name="element">An object that raise the <see cref="PdfPrintFinished"/> routed event.</param>
 		/// <param name="handler">The handler.</param>
-		public static void RemovePdfPrintFinishedHandler(AIA.Interactive element, EventHandler<PdfPrintFinishedRoutedEventArgs> handler)
+		public static void RemovePdfPrintFinishedHandler(Interactive element, EventHandler<PdfPrintFinishedRoutedEventArgs> handler)
 		{
 			element?.RemoveHandler(PdfPrintFinishedEvent, handler);
 		}
@@ -133,14 +136,14 @@ namespace CefNet.Avalonia
 		/// <summary>
 		/// Identifies the <see cref="StatusTextChanged"/> routed event.
 		/// </summary>
-		public static readonly AIA.RoutedEvent StatusTextChangedEvent = AIA.RoutedEvent.Register<WebView, AIA.RoutedEventArgs>(nameof(StatusTextChanged), AIA.RoutingStrategies.Bubble);
+		public static readonly RoutedEvent StatusTextChangedEvent = RoutedEvent.Register<WebView, RoutedEventArgs>(nameof(StatusTextChanged), RoutingStrategies.Bubble);
 
 		/// <summary>
 		/// Adds a handler for the <see cref="StatusTextChanged"/> attached event.
 		/// </summary>
 		/// <param name="element">An object that raise the <see cref="StatusTextChanged"/> routed event.</param>
 		/// <param name="handler">The handler.</param>
-		public static void AddStatusTextChangedHandler(AIA.Interactive element, EventHandler<EventArgs> handler)
+		public static void AddStatusTextChangedHandler(Interactive element, EventHandler<EventArgs> handler)
 		{
 			element?.AddHandler(StatusTextChangedEvent, handler);
 		}
@@ -150,7 +153,7 @@ namespace CefNet.Avalonia
 		/// </summary>
 		/// <param name="element">An object that raise the <see cref="StatusTextChanged"/> routed event.</param>
 		/// <param name="handler">The handler.</param>
-		public static void RemoveStatusTextChangedHandler(AIA.Interactive element, EventHandler<EventArgs> handler)
+		public static void RemoveStatusTextChangedHandler(Interactive element, EventHandler<EventArgs> handler)
 		{
 			element?.RemoveHandler(StatusTextChangedEvent, handler);
 		}
@@ -158,14 +161,14 @@ namespace CefNet.Avalonia
 		/// <summary>
 		/// Identifies the <see cref="ScriptDialogOpening"/> routed event.
 		/// </summary>
-		public static readonly AIA.RoutedEvent ScriptDialogOpeningEvent = AIA.RoutedEvent.Register<WebView, ScriptDialogOpeningRoutedEventArgs>(nameof(ScriptDialogOpening), AIA.RoutingStrategies.Bubble);
+		public static readonly RoutedEvent ScriptDialogOpeningEvent = RoutedEvent.Register<WebView, ScriptDialogOpeningRoutedEventArgs>(nameof(ScriptDialogOpening), RoutingStrategies.Bubble);
 
 		/// <summary>
 		/// Adds a handler for the <see cref="ScriptDialogOpening"/> attached event.
 		/// </summary>
 		/// <param name="element">An object that raise the <see cref="ScriptDialogOpening"/> routed event.</param>
 		/// <param name="handler">The handler.</param>
-		public static void AddScriptDialogOpeningHandler(AIA.Interactive element, EventHandler<ScriptDialogOpeningRoutedEventArgs> handler)
+		public static void AddScriptDialogOpeningHandler(Interactive element, EventHandler<ScriptDialogOpeningRoutedEventArgs> handler)
 		{
 			element?.AddHandler(ScriptDialogOpeningEvent, handler);
 		}
@@ -175,7 +178,7 @@ namespace CefNet.Avalonia
 		/// </summary>
 		/// <param name="element">An object that raise the <see cref="ScriptDialogOpening"/> routed event.</param>
 		/// <param name="handler">The handler.</param>
-		public static void RemoveScriptDialogOpeningHandler(AIA.Interactive element, EventHandler<ScriptDialogOpeningRoutedEventArgs> handler)
+		public static void RemoveScriptDialogOpeningHandler(Interactive element, EventHandler<ScriptDialogOpeningRoutedEventArgs> handler)
 		{
 			element?.RemoveHandler(ScriptDialogOpeningEvent, handler);
 		}
@@ -284,7 +287,7 @@ namespace CefNet.Avalonia
 
 		protected virtual void Initialize()
 		{
-			AIP.DragDrop.SetAllowDrop(this, true);
+			DragDrop.SetAllowDrop(this, true);
 			ToolTip = new ToolTip { IsVisible = false };
 			this.ViewGlue = CreateWebViewGlue();
 			OffscreenGraphics = new OffscreenGraphics();
@@ -336,22 +339,21 @@ namespace CefNet.Avalonia
 		public override void Render(DrawingContext drawingContext)
 		{
 			base.Render(drawingContext);
-
 			if (OffscreenGraphics != null)
 			{
 				OffscreenGraphics.Render(drawingContext);
 			}
 			else
 			{
-                drawingContext.DrawText(new FormattedText
+				drawingContext.DrawText(new FormattedText
 					(
-						this.GetType().Name, 
-						System.Globalization.CultureInfo.CurrentCulture, 
-						FlowDirection.LeftToRight, 
-						Typeface.Default, 
-						12, 
+                        this.GetType().Name,
+						CultureInfo.InvariantCulture,
+						FlowDirection.LeftToRight,
+						Typeface.Default,
+						FontSize,
 						Brushes.Black
-					), new Point(10, 10));
+                    ), new Point(10, 10));
 			}
 		}
 
@@ -526,7 +528,7 @@ namespace CefNet.Avalonia
 		/// <param name="routedEvent">An identifier for the routed event to be handled.</param>
 		/// <param name="handler">A reference to the handler implementation.</param>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void AddHandler(in AIA.RoutedEvent routedEvent, Delegate handler)
+		private void AddHandler(in RoutedEvent routedEvent, Delegate handler)
 		{
 			AddHandler(routedEvent, handler);
 		}
@@ -537,7 +539,7 @@ namespace CefNet.Avalonia
 		/// <param name="routedEvent">The identifier of the routed event for which the handler is attached.</param>
 		/// <param name="handler">The specific handler implementation to remove from the event handler collection on this element.</param>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void RemoveHandler(in AIA.RoutedEvent routedEvent, Delegate handler)
+		private void RemoveHandler(in RoutedEvent routedEvent, Delegate handler)
 		{
 			RemoveHandler(routedEvent, handler);
 		}
@@ -718,7 +720,7 @@ namespace CefNet.Avalonia
 		void IAvaloniaWebViewPrivate.CefSetStatusText(string statusText)
 		{
 			this.StatusText = statusText;
-			RaiseCrossThreadEvent(OnStatusTextChanged, new AIA.RoutedEventArgs(StatusTextChangedEvent, this), false);
+			RaiseCrossThreadEvent(OnStatusTextChanged, new RoutedEventArgs(StatusTextChangedEvent, this), false);
 		}
 
 		void IAvaloniaWebViewPrivate.RaiseStartDragging(StartDraggingEventArgs e)
@@ -739,34 +741,34 @@ namespace CefNet.Avalonia
 
 			e.Handled = true;
 
-			await AIP.DragDrop.DoDragDrop(_lastPointerPressedEventArgs, new CefNetDragData(this, e.Data), e.AllowedEffects.ToDragDropEffects());
+			await DragDrop.DoDragDrop(_lastPointerPressedEventArgs, new CefNetDragData(this, e.Data), e.AllowedEffects.ToDragDropEffects());
 			DragSourceSystemDragEnded();
 		}
 
-		protected override void OnGotFocus(AIP.GotFocusEventArgs e)
+		protected override void OnGotFocus(GotFocusEventArgs e)
 		{
 			BrowserObject?.Host.SetFocus(true);
 			base.OnGotFocus(e);
 		}
 
-		protected override void OnLostFocus(AIA.RoutedEventArgs e)
+		protected override void OnLostFocus(RoutedEventArgs e)
 		{
 			if (Volatile.Read(ref _suppressLostFocusEvent) == 0)
 				BrowserObject?.Host.SetFocus(false);
 			base.OnLostFocus(e);
 		}
 
-		protected override void OnPointerMoved(AIP.PointerEventArgs e)
+		protected override void OnPointerMoved(PointerEventArgs e)
 		{
-			if (e.Pointer.Type == AIP.PointerType.Touch)
+			if (e.Pointer.Type == PointerType.Touch)
 			{
 				OnTouch(CefTouchEventType.Moved, e);
 			}
 			else
 			{
 				CefEventFlags modifiers = GetModifierKeys(e.KeyModifiers);
-                AIP.PointerPoint pointerPoint = e.GetCurrentPoint(this);
-                AIP.PointerPointProperties pp = pointerPoint.Properties;
+				PointerPoint pointerPoint = e.GetCurrentPoint(this);
+				PointerPointProperties pp = pointerPoint.Properties;
 				if (pp.IsLeftButtonPressed)
 					modifiers |= CefEventFlags.LeftMouseButton;
 				if (pp.IsRightButtonPressed)
@@ -777,13 +779,13 @@ namespace CefNet.Avalonia
 			base.OnPointerMoved(e);
 		}
 
-        protected override void OnPointerExited(AIP.PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             SendMouseLeaveEvent();
             base.OnPointerExited(e);
         }
 
-		protected override void OnPointerPressed(AIP.PointerPressedEventArgs e)
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			_lastPointerPressedEventArgs = e;
 
@@ -791,10 +793,9 @@ namespace CefNet.Avalonia
 			{
 				Focus();
 			}
-
-            if (AIP.PointerUpdateKindExtensions.GetMouseButton(e.GetCurrentPoint(null).Properties.PointerUpdateKind) <= AIP.MouseButton.Right)
+			if (e.GetCurrentPoint(null).Properties.PointerUpdateKind.GetMouseButton() <= MouseButton.Right)
 			{
-				if (e.Pointer.Type == AIP.PointerType.Touch)
+				if (e.Pointer.Type == PointerType.Touch)
 				{
 					OnTouch(CefTouchEventType.Pressed, e);
 				}
@@ -807,14 +808,13 @@ namespace CefNet.Avalonia
 			base.OnPointerPressed(e);
 		}
 
-		protected override void OnPointerReleased(AIP.PointerReleasedEventArgs e)
+		protected override void OnPointerReleased(PointerReleasedEventArgs e)
 		{
 			base.OnPointerReleased(e);
-
-			if (AIP.PointerUpdateKindExtensions.GetMouseButton(e.GetCurrentPoint(null).Properties.PointerUpdateKind) > AIP.MouseButton.Right)
+			if (e.GetCurrentPoint(null).Properties.PointerUpdateKind.GetMouseButton() > MouseButton.Right)
 				return;
 
-			if (e.Pointer.Type == AIP.PointerType.Touch)
+			if (e.Pointer.Type == PointerType.Touch)
 			{
 				OnTouch(CefTouchEventType.Released, e);
 			}
@@ -825,7 +825,7 @@ namespace CefNet.Avalonia
 			}
 		}
 
-		protected override void OnPointerWheelChanged(AIP.PointerWheelEventArgs e)
+		protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
 		{
 			base.OnPointerWheelChanged(e);
 
@@ -835,7 +835,7 @@ namespace CefNet.Avalonia
 			e.Handled = true;
 		}
 
-		private void OnTouch(CefTouchEventType eventType, AIP.PointerEventArgs e)
+		private void OnTouch(CefTouchEventType eventType, PointerEventArgs e)
 		{
 			Point pt = e.GetPosition(this);
 			CefPoint location = PointToViewport(new CefPoint((int)pt.X, (int)pt.Y));
@@ -849,24 +849,24 @@ namespace CefNet.Avalonia
 			SendTouchEvent(eventInfo);
 		}
 
-		protected virtual bool ProcessPreviewKey(CefKeyEventType eventType, AIP.KeyEventArgs e)
+		protected virtual bool ProcessPreviewKey(CefKeyEventType eventType, KeyEventArgs e)
 		{
 			if (PlatformInfo.IsWindows)
 				SetWindowsKeyboardLayoutForCefUIThreadIfNeeded();
 
 			CefEventFlags modifiers = GetCefKeyboardModifiers(e);
-			AIP.Key key = e.Key;
-			if (eventType == CefKeyEventType.KeyUp && key == AIP.Key.None)
+			Key key = e.Key;
+			if (eventType == CefKeyEventType.KeyUp && key == Key.None)
 			{
-				if (e.KeyModifiers == AIP.KeyModifiers.Shift)
+				if (e.KeyModifiers == KeyModifiers.Shift)
 				{
-					key = AIP.Key.LeftShift;
+					key = Key.LeftShift;
 					modifiers |= CefEventFlags.IsLeft;
 				}
 			}
 			
 			VirtualKeys virtualKey = key.ToVirtualKey();
-			bool isSystemKey = (e.KeyModifiers.HasFlag(AIP.KeyModifiers.Alt) || key == AIP.Key.LeftAlt || key == AIP.Key.RightAlt);
+			bool isSystemKey = (e.KeyModifiers.HasFlag(KeyModifiers.Alt) || key == Key.LeftAlt || key == Key.RightAlt);
 
 			if (eventType == CefKeyEventType.RawKeyDown)
 			{
@@ -888,14 +888,16 @@ namespace CefNet.Avalonia
 				k.IsSystemKey = isSystemKey;
 				k.WindowsKeyCode = (int)virtualKey;
 				k.NativeKeyCode = KeycodeConverter.VirtualKeyToNativeKeyCode(virtualKey, modifiers, false);
+
 				if (PlatformInfo.IsMacOS)
 				{
-					k.UnmodifiedCharacter = char.ToUpperInvariant(CefNet.Input.KeycodeConverter.TranslateVirtualKey(virtualKey, CefEventFlags.None));
-					k.Character = CefNet.Input.KeycodeConverter.TranslateVirtualKey(virtualKey, modifiers);
+					k.UnmodifiedCharacter = char.ToUpperInvariant(KeycodeConverter.TranslateVirtualKey(virtualKey, CefEventFlags.None));
+					k.Character = KeycodeConverter.TranslateVirtualKey(virtualKey, modifiers);
 				}
+
 				this.BrowserObject?.Host.SendKeyEvent(k);
 
-				if (key == AIP.Key.Enter && eventType == CefKeyEventType.RawKeyDown)
+				if (key == Key.Enter && eventType == CefKeyEventType.RawKeyDown)
 				{
 					k.Type = CefKeyEventType.Char;
 					k.Character = '\r';
@@ -908,48 +910,47 @@ namespace CefNet.Avalonia
 				return true;
 
 			// Prevent keyboard navigation using arrows and home and end keys
-			if (key >= AIP.Key.PageUp && key <= AIP.Key.Down)
+			if (key >= Key.PageUp && key <= Key.Down)
 				return true;
 
-			if (key == AIP.Key.Tab)
+			if (key == Key.Tab)
 				return true;
 
 			// Allow Ctrl+A to work when the WebView control is put inside listbox.
-			if (key == AIP.Key.A && e.KeyModifiers.HasFlag(AIP.KeyModifiers.Control))
+			if (key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control))
 				return true;
 
 			return false;
 		}
 
-		private void HandlePreviewKeyDown(object sender, AIP.KeyEventArgs e)
+		private void HandlePreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			OnPreviewKeyDown(e);
 		}
 
-		protected virtual void OnPreviewKeyDown(AIP.KeyEventArgs e)
+		protected virtual void OnPreviewKeyDown(KeyEventArgs e)
 		{
 			e.Handled = ProcessPreviewKey(CefKeyEventType.RawKeyDown, e);
 		}
 
-		private void HandlePreviewKeyUp(object sender, AIP.KeyEventArgs e)
+        private void HandlePreviewKeyUp(object sender, KeyEventArgs e)
 		{
 			OnPreviewKeyUp(e);
 		}
 
-		protected virtual void OnPreviewKeyUp(AIP.KeyEventArgs e)
+		protected virtual void OnPreviewKeyUp(KeyEventArgs e)
 		{
 			e.Handled = ProcessPreviewKey(CefKeyEventType.KeyUp, e);
 		}
 
-		protected override void OnTextInput(AIP.TextInputEventArgs e)
+		protected override void OnTextInput(TextInputEventArgs e)
 		{
 			foreach (char symbol in e.Text)
 			{
-				CefEventFlags modifiers = CefNet.Input.KeycodeConverter.IsShiftRequired(symbol) ? CefEventFlags.ShiftDown : CefEventFlags.None;
-
-				VirtualKeys key = KeycodeConverter.CharacterToVirtualKey(symbol);
-
+				var modifiers = KeycodeConverter.IsShiftRequired(symbol) ? CefEventFlags.ShiftDown : CefEventFlags.None;
+				var key = KeycodeConverter.CharacterToVirtualKey(symbol);
 				var k = new CefKeyEvent();
+
 				k.Type = CefKeyEventType.Char;
 				k.WindowsKeyCode = PlatformInfo.IsLinux ? (int)key : symbol;
 				k.Character = symbol;
@@ -961,49 +962,49 @@ namespace CefNet.Avalonia
 			e.Handled = true;
 		}
 
-		private void HandleDragEnter(object sender, AIP.DragEventArgs e)
+		private void HandleDragEnter(object sender, DragEventArgs e)
 		{
 			OnDragEnter(e);
 		}
 
-		private void HandleDragOver(object sender, AIP.DragEventArgs e)
+		private void HandleDragOver(object sender, DragEventArgs e)
 		{
 			OnDragOver(e);
 		}
 
-		private void HandleDragLeave(object sender, AIP.DragEventArgs e)
+		private void HandleDragLeave(object sender, DragEventArgs e)
 		{
 			OnDragLeave(e);
 		}
 
-		private void HandleDrop(object sender, AIP.DragEventArgs e)
+		private void HandleDrop(object sender, DragEventArgs e)
 		{
 			OnDrop(e);
 		}
 
-		protected virtual void OnDragEnter(AIP.DragEventArgs e)
+		protected virtual void OnDragEnter(DragEventArgs e)
 		{
 			Point mousePos = e.GetPosition(this);
 			SendDragEnterEvent((int)mousePos.X, (int)mousePos.Y, e.GetModifiers(), e.GetCefDragData(), e.DragEffects.ToCefDragOperationsMask());
-			e.DragEffects = AIP.DragDropEffects.Copy & e.DragEffects;
+			e.DragEffects = DragDropEffects.Copy & e.DragEffects;
 			e.Handled = true;
 		}
 
-		protected virtual void OnDragOver(AIP.DragEventArgs e)
+		protected virtual void OnDragOver(DragEventArgs e)
 		{
 			Point mousePos = e.GetPosition(this);
 			SendDragOverEvent((int)mousePos.X, (int)mousePos.Y, e.GetModifiers(), e.DragEffects.ToCefDragOperationsMask());
-			e.DragEffects = e.DragEffects & AIP.DragDropEffects.Copy;
+			e.DragEffects = e.DragEffects & DragDropEffects.Copy;
 			e.Handled = true;
 		}
 
-		protected virtual void OnDragLeave(AIP.DragEventArgs e)
+		protected virtual void OnDragLeave(DragEventArgs e)
 		{
 			SendDragLeaveEvent();
 			e.Handled = true;
 		}
 
-		protected virtual void OnDrop(AIP.DragEventArgs e)
+		protected virtual void OnDrop(DragEventArgs e)
 		{
 			Point mousePos = e.GetPosition(this);
 			SendDragDropEvent((int)mousePos.X, (int)mousePos.Y, e.GetModifiers());
@@ -1019,102 +1020,133 @@ namespace CefNet.Avalonia
 			e.Handled = true;
 		}
 
-		protected static CefMouseButtonType GetButton(AIP.PointerEventArgs e)
+		protected static CefMouseButtonType GetButton(PointerEventArgs e)
 		{
 			
 			switch (e.GetCurrentPoint(null).Properties.PointerUpdateKind)
 			{
-				case AIP.PointerUpdateKind.RightButtonPressed:
-				case AIP.PointerUpdateKind.RightButtonReleased:
+				case PointerUpdateKind.RightButtonPressed:
+				case PointerUpdateKind.RightButtonReleased:
 					return CefMouseButtonType.Right;
-				case AIP.PointerUpdateKind.MiddleButtonPressed:
-				case AIP.PointerUpdateKind.MiddleButtonReleased:
+				case PointerUpdateKind.MiddleButtonPressed:
+				case PointerUpdateKind.MiddleButtonReleased:
 					return CefMouseButtonType.Middle;
 			}
 			return CefMouseButtonType.Left;
 		}
 
-		protected static CefEventFlags GetModifierKeys(AIP.KeyModifiers modKeys)
+        protected static CefEventFlags GetModifierKeys(KeyModifiers modKeys)
 		{
 			CefEventFlags modifiers = CefEventFlags.None;
-			if (modKeys.HasFlag(AIP.KeyModifiers.Shift))
+
+            if (IsCapsLockToggled())
+                modifiers |= CefEventFlags.CapsLockOn;
+
+            if (IsNumLockToggled())
+                modifiers |= CefEventFlags.NumLockOn;
+
+            if (modKeys.HasFlag(KeyModifiers.Shift))
 				modifiers |= CefEventFlags.ShiftDown;
-			if (modKeys.HasFlag(AIP.KeyModifiers.Control))
+
+			if (modKeys.HasFlag(KeyModifiers.Control))
 				modifiers |= CefEventFlags.ControlDown;
-			if (modKeys.HasFlag(AIP.KeyModifiers.Alt))
+
+			if (modKeys.HasFlag(KeyModifiers.Alt))
 				modifiers |= CefEventFlags.AltDown;
+
 			return modifiers;
 		}
 
-		protected CefEventFlags GetCefKeyboardModifiers(AIP.KeyEventArgs e)
+        protected CefEventFlags GetCefKeyboardModifiers(KeyEventArgs e)
 		{
 			CefEventFlags modifiers = GetModifierKeys(e.KeyModifiers);
 
-
-			// TODO:
-			//if (Keyboard.IsKeyToggled(Key.NumLock))
-			//	modifiers |= CefEventFlags.NumLockOn;
-			//if (Keyboard.IsKeyToggled(Key.CapsLock))
-			//	modifiers |= CefEventFlags.CapsLockOn;
-
-			switch (e.Key)
+            switch (e.Key)
 			{
-				case AIP.Key.Return:
+				case Key.Return:
 					//if (e.IsExtendedKey())
 					//	modifiers |= CefEventFlags.IsKeyPad;
 					break;
-				case AIP.Key.Insert:
-				case AIP.Key.Delete:
-				case AIP.Key.Home:
-				case AIP.Key.End:
-				case AIP.Key.Prior:
-				case AIP.Key.Next:
-				case AIP.Key.Up:
-				case AIP.Key.Down:
-				case AIP.Key.Left:
-				case AIP.Key.Right:
+				case Key.Insert:
+				case Key.Delete:
+				case Key.Home:
+				case Key.End:
+				case Key.Prior:
+				case Key.Next:
+				case Key.Up:
+				case Key.Down:
+				case Key.Left:
+				case Key.Right:
 					//if (!e.IsExtendedKey())
 					//	modifiers |= CefEventFlags.IsKeyPad;
 					break;
-				case AIP.Key.NumLock:
-				case AIP.Key.NumPad0:
-				case AIP.Key.NumPad1:
-				case AIP.Key.NumPad2:
-				case AIP.Key.NumPad3:
-				case AIP.Key.NumPad4:
-				case AIP.Key.NumPad5:
-				case AIP.Key.NumPad6:
-				case AIP.Key.NumPad7:
-				case AIP.Key.NumPad8:
-				case AIP.Key.NumPad9:
-				case AIP.Key.Divide:
-				case AIP.Key.Multiply:
-				case AIP.Key.Subtract:
-				case AIP.Key.Add:
-				case AIP.Key.Decimal:
-				case AIP.Key.Clear:
+				case Key.NumLock:
+				case Key.NumPad0:
+				case Key.NumPad1:
+				case Key.NumPad2:
+				case Key.NumPad3:
+				case Key.NumPad4:
+				case Key.NumPad5:
+				case Key.NumPad6:
+				case Key.NumPad7:
+				case Key.NumPad8:
+				case Key.NumPad9:
+				case Key.Divide:
+				case Key.Multiply:
+				case Key.Subtract:
+				case Key.Add:
+				case Key.Decimal:
+				case Key.Clear:
 					modifiers |= CefEventFlags.IsKeyPad;
 					break;
-				case AIP.Key.LeftShift:
-				case AIP.Key.LeftCtrl:
-				case AIP.Key.LeftAlt:
-				case AIP.Key.LWin:
+				case Key.LeftShift:
+				case Key.LeftCtrl:
+				case Key.LeftAlt:
+				case Key.LWin:
 					modifiers |= CefEventFlags.IsLeft;
 					break;
-				case AIP.Key.RightShift:
-				case AIP.Key.RightCtrl:
-				case AIP.Key.RightAlt:
-				case AIP.Key.RWin:
+				case Key.RightShift:
+				case Key.RightCtrl:
+				case Key.RightAlt:
+				case Key.RWin:
 					modifiers |= CefEventFlags.IsRight;
 					break;
 			}
 			return modifiers;
 		}
 
-		/// <summary>
-		/// Sets the current input locale identifier for the UI thread in the browser.
-		/// </summary>
-		private void SetWindowsKeyboardLayoutForCefUIThreadIfNeeded()
+        private static bool IsCapsLockToggled()
+        {
+			if (PlatformInfo.IsWindows)
+                return (NativeMethods.GetKeyState(WinApi.VirtualKeyStates.VK_CAPITAL) & 0x0001) != 0;
+
+			if (PlatformInfo.IsLinux)
+				return X11Api.NativeMethods.IsCapsLockToggled();
+
+			if (PlatformInfo.IsMacOS)
+				return OSXApi.NativeMethods.IsCapsLockToggled();
+
+            return false;
+        }
+
+        private static bool IsNumLockToggled()
+        {
+            if (PlatformInfo.IsWindows)
+                return (NativeMethods.GetKeyState(WinApi.VirtualKeyStates.VK_NUMLOCK) & 0x0001) != 0;
+
+			if (PlatformInfo.IsLinux)
+				return X11Api.NativeMethods.IsNumLockToggled();
+
+            if (PlatformInfo.IsMacOS)
+                return OSXApi.NativeMethods.IsNumLockToggled();
+
+            return false;
+        }
+
+        /// <summary>
+        /// Sets the current input locale identifier for the UI thread in the browser.
+        /// </summary>
+        private void SetWindowsKeyboardLayoutForCefUIThreadIfNeeded()
 		{
 			IntPtr hkl = NativeMethods.GetKeyboardLayout(0);
 			if (_keyboardLayout == hkl)

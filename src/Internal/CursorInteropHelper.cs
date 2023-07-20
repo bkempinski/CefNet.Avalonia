@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CefNet.Internal
 {
-    public static class CursorInteropHelper
+	public static class CursorInteropHelper
 	{
 		private static readonly Dictionary<IntPtr, Cursor> _Cursors = new Dictionary<IntPtr, Cursor>();
 		private static readonly Dictionary<StandardCursorType, Cursor> _StdCursors = new Dictionary<StandardCursorType, Cursor>();

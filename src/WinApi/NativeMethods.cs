@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CefNet.Avalonia.WinApi;
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace CefNet.WinApi
 {
-	static class NativeMethods
+    static class NativeMethods
 	{
 		[DllImport("user32.dll")]
 		public static extern IntPtr GetKeyboardLayout(uint idThread);
@@ -36,10 +35,13 @@ namespace CefNet.WinApi
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr pPid);
 
-		[DllImport("Dwmapi.dll", CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern short GetKeyState(VirtualKeyStates nVirtKey);
+
+        [DllImport("Dwmapi.dll", CharSet = CharSet.Auto)]
 		public static unsafe extern int DwmGetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE attribute, void* value, int size);
 
 		[DllImport("Dwmapi.dll", CharSet = CharSet.Auto, PreserveSig = false)]
 		public static extern bool DwmIsCompositionEnabled();
-	}
+    }
 }

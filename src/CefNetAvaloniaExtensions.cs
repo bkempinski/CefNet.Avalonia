@@ -1,6 +1,7 @@
 ﻿using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+//using Avalonia.Remote.Protocol.Input;
 using CefNet.Input;
 using CefNet.Internal;
 using System;
@@ -9,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using ARPI = Avalonia.Remote.Protocol.Input;
 
 namespace CefNet.Avalonia
 {
@@ -87,21 +87,22 @@ namespace CefNet.Avalonia
 		public static CefEventFlags GetModifiers(this DragEventArgs e)
 		{
 #pragma warning disable CS0618 // Obsoleted InputModifiers
-			CefEventFlags flags = CefEventFlags.None;
-            KeyModifiers state = e.KeyModifiers;
-			if (state.HasFlag(ARPI.InputModifiers.LeftMouseButton))
-				flags |= CefEventFlags.LeftMouseButton;
-			if (state.HasFlag(ARPI.InputModifiers.RightMouseButton))
-				flags |= CefEventFlags.RightMouseButton;
-			if (state.HasFlag(ARPI.InputModifiers.Shift))
+            var flags = CefEventFlags.None;
+			var state = e.KeyModifiers;
+
+            //if (state.HasFlag(InputModifiers.LeftMouseButton))
+            //	flags |= CefEventFlags.LeftMouseButton;
+            //if (state.HasFlag(InputModifiers.MiddleMouseButton))
+            //    flags |= CefEventFlags.MiddleMouseButton;
+            //if (state.HasFlag(InputModifiers.RightMouseButton))
+            //	flags |= CefEventFlags.RightMouseButton;
+            if (state.HasFlag(KeyModifiers.Shift))
 				flags |= CefEventFlags.ShiftDown;
-			if (state.HasFlag(ARPI.InputModifiers.Control))
+			if (state.HasFlag(KeyModifiers.Control))
 				flags |= CefEventFlags.ControlDown;
-			if (state.HasFlag(ARPI.InputModifiers.MiddleMouseButton))
-				flags |= CefEventFlags.MiddleMouseButton;
-			if (state.HasFlag(ARPI.InputModifiers.Alt))
+			if (state.HasFlag(KeyModifiers.Alt))
 				flags |= CefEventFlags.AltDown;
-			if (state.HasFlag(ARPI.InputModifiers.Windows))
+			if (state.HasFlag(KeyModifiers.Meta))
 				flags |= CefEventFlags.CommandDown;
 			return flags;
 #pragma warning restore CS0618

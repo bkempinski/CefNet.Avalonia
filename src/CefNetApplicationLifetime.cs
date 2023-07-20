@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace CefNet
 {
-    public class CefNetApplicationLifetime : IClassicDesktopStyleApplicationLifetime, IControlledApplicationLifetime, IApplicationLifetime, IDisposable
+	public class CefNetApplicationLifetime : IClassicDesktopStyleApplicationLifetime, IControlledApplicationLifetime, IApplicationLifetime, IDisposable
 	{
 		private int _exitCode;
 		private CancellationTokenSource _cts;
@@ -89,7 +93,7 @@ namespace CefNet
 			}
 		}
 
-		public void OnShutdownRequested(object sender, ShutdownRequestedEventArgs e)
+		private void OnShutdownRequested(object sender, ShutdownRequestedEventArgs e)
 		{
 			ShutdownRequested?.Invoke(this, e);
 
@@ -150,6 +154,12 @@ namespace CefNet
 			{
 				this.Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
+				// Workaround for this?
+				//var lifetimeEvents = AvaloniaLocator.Current.GetService<IPlatformLifetimeEventsImpl>();
+
+				//if (lifetimeEvents != null)
+				//	lifetimeEvents.ShutdownRequested += OnShutdownRequested;
+
 				_cts = new CancellationTokenSource();
 				MainWindow?.Show();
 
@@ -188,4 +198,7 @@ namespace CefNet
 			return lifetime.Start(args);
 		}
 	}
+
+
+
 }
