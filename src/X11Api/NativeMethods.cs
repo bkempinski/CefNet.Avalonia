@@ -8,6 +8,9 @@ public static class NativeMethods
     public const int XkbUseCoreKbd = 0x0100;
     public const int Success = 1;
 
+    public delegate int XErrorHandler(IntPtr DisplayHandle, ref XErrorEvent error_event);
+    public delegate int XIOErrorHandler(IntPtr DisplayHandle);
+
     [DllImport("X11", CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr XOpenDisplay(IntPtr display);
 
@@ -16,6 +19,15 @@ public static class NativeMethods
 
     [DllImport("X11", CallingConvention = CallingConvention.Cdecl)]
     public static extern int XkbGetIndicatorState(IntPtr display, uint deviceSpec, out uint stateReturn);
+
+    [DllImport("X11")]
+    public static extern XErrorHandler XSetErrorHandler(XErrorHandler Handler);
+
+    [DllImport("X11")]
+    public static extern XErrorHandler XSetIOErrorHandler(XIOErrorHandler Handler);
+
+    [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+    public static extern IntPtr dlopen(string path, int mode);
 
     public static bool IsCapsLockToggled()
     {
